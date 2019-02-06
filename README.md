@@ -66,6 +66,10 @@ You can run the app with:
 
 `./mvnw spring-boot:run`
 
+You should now be able to access the running application at <http://localhost:8080>
+
+You will just see a Whitelabel Error Page since we haven't setup any routes yet but that still shows the app is running and accessible.
+
 Notice the java code from the docker image is now in java/app.
 
 **Next steps**
