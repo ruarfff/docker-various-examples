@@ -24,9 +24,18 @@ From the java directory:
 
 `mkdir -p app && cd "$_"`
 
+On Windows: 
+
+`mkdir app`
+`cd app`
+
 Create a named volume for the current directory (using mavendev here but feel free to call it something else):
 
 `docker volume create -d local -o type=none -o o=bind -o device=$(pwd) mavendev`
+
+Windows! One annoying thing is $(pwd) on Windows returns a path with Widows backslashes. You need forward slashes for volumes so on Windows you need to do this:
+
+`docker volume create -d local -o type=none -o o=bind -o device=%CD:\=/% mavendev`
 
 Take a second to look at the volume you just created:
 
@@ -41,19 +50,39 @@ You can inspect it to make sure you are happy with the directory setup. Device i
 ```
 $ docker volume inspect mavendev
 [
-{
-"CreatedAt": "2019-02-06T19:18:44Z",
-"Driver": "local",
-"Labels": {},
-"Mountpoint": "/var/lib/docker/volumes/mavendev/_data",
-"Name": "mavendev",
-"Options": {
-"device": "/Users/ruairi/Dev/docker-various-examples/java/app",
-"o": "bind",
-"type": "none"
-},
-"Scope": "local"
+  {
+    "CreatedAt": "2019-02-06T19:18:44Z",
+    "Driver": "local",
+    "Labels": {},
+    "Mountpoint": "/var/lib/docker/volumes/mavendev/_data",
+    "Name": "mavendev",
+    "Options": {
+      "device": "/Users/ruairi/Dev/docker-various-examples/java/app",
+      "o": "bind",
+      "type": "none"
+  },
+  "Scope": "local"
 }
+]
+```
+
+If you're on Windows it would look something like this:
+
+```
+[
+  {
+    "CreatedAt": "2019-02-07T07:27:11Z",
+    "Driver": "local",
+    "Labels": {},
+    "Mountpoint": "/var/lib/docker/volumes/mavendev/_data",
+    "Name": "mavendev",
+    "Options": {
+        "device": "/c/Users/ruairi/Dev/docker-various-examples/java/app",
+        "o": "bind",
+        "type": "none"
+    },
+    "Scope": "local"
+  }
 ]
 ```
 
@@ -98,9 +127,19 @@ From the javascript directory:
 
 `mkdir -p app && cd "$_"`
 
+On Windows: 
+
+`mkdir app`
+`cd app`
+
+
 Create a named volume for the current directory (using reactdev here but feel free to call it something else):
 
 `docker volume create -d local -o type=none -o o=bind -o device=$(pwd) reactdev`
+
+On Windows do it like this:
+
+`docker volume create -d local -o type=none -o o=bind -o device=%CD:\=/% reactdev`
 
 Take a second to look at the volume you just created:
 
@@ -131,6 +170,26 @@ $ docker volume inspect reactdev
 ]
 ```
 
+If you're on Windows it would look something like this:
+
+```
+[
+  {
+    "CreatedAt": "2019-02-07T07:27:11Z",
+    "Driver": "local",
+    "Labels": {},
+    "Mountpoint": "/var/lib/docker/volumes/mavendev/_data",
+    "Name": "mavendev",
+    "Options": {
+        "device": "/c/Users/ruairi/Dev/docker-various-examples/javascript/app",
+        "o": "bind",
+        "type": "none"
+    },
+    "Scope": "local"
+  }
+]
+```
+
 Now we can run the container and use the volume we created:
 
 `docker run --rm -it -v reactdev:/usr/app/my-app -w /usr/app/my-app -p 3000:3000 react-build sh`
@@ -138,3 +197,54 @@ Now we can run the container and use the volume we created:
 Now you can run `yarn start`
 
 And access the app on <http://localhost:3000>
+
+# Cleanup
+
+You probably don't want to leave all the stuff we just created hanging aroound on yoour achne if you're not usign it.
+
+Here's how to clean it all up.
+
+### Containers
+
+First stop and remove the containers we created.
+
+To see them we use [docker ps](https://docs.docker.com/engine/reference/commandline/ps/):
+
+```
+docker ps -a -q
+```
+
+If you stopeed the containers you need to use `-a` to show stopped containers. Because we only need the ID we pass `-q`.
+
+Now you can copy the IDs of the container you want to remove and run:
+
+`docker rm <the-ids-space-seperated>`
+
+If the container is running, you would first haev to do:
+
+`docker stop <the-ids-space-seperated>`
+
+If you just want to get rid of all containers you can do this:
+
+```
+docker stop $(docker ps -a -q)
+docker rm $(docker ps -a -q)
+```
+
+### Images
+
+You can see what images we created using [docker image ls](https://docs.docker.com/engine/reference/commandline/image_ls/) (`docker images` works too).
+
+The command to remove and image is: `docker rmi <image-id>` 
+
+It's fine to leave the images there but if you'd like to free up some space you can delete them.
+
+
+### Volumes
+
+List your volumes: `docker volume ls`
+
+Delete a volume `docker volume rm <volume-name>`
+
+Clean up all unused volumes: `docker volume prune`
+
