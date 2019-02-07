@@ -33,9 +33,13 @@ Create a named volume for the current directory (using mavendev here but feel fr
 
 `docker volume create -d local -o type=none -o o=bind -o device=$(pwd) mavendev`
 
-Windows! One annoying thing is $(pwd) on Windows returns a path with Widows backslashes. You need forward slashes for volumes so on Windows you need to do this:
+**Windows!** One annoying thing is $(pwd) on Windows returns a path with Widows backslashes. So you might see $(pwd) git something like `C:\Users\you\whatever` but it needs to be in the form `/c/Users/you/whatever`. I haven't found a good way to workaround this yet. One thing, if you're using regular Cmd.exe you can at least do this in the current directory: `echo %CD:\=/%` to print the path with forward slashes. You then need to replact `C:` with `/c`. 
 
-`docker volume create -d local -o type=none -o o=bind -o device=%CD:\=/% mavendev`
+So if you're on Windows you need to update the volume command to something like:
+
+`docker volume create -d local -o type=none -o o=bind -o device=/c/Users/ruairi/Dev/docker-various-examples/java/app mavendev`
+
+Of course replace my username with yours and update the path to wherever you put your code.
 
 Take a second to look at the volume you just created:
 
@@ -99,7 +103,7 @@ You should now be able to access the running application at <http://localhost:80
 
 You will just see a Whitelabel Error Page since we haven't setup any routes yet but that still shows the app is running and accessible.
 
-Notice the java code from the docker image is now in java/app.
+Notice the java code from the docker image is now in java/app. You can edit this code and your changes will be reflected in the container. 
 
 **Next steps**
 
@@ -137,9 +141,11 @@ Create a named volume for the current directory (using reactdev here but feel fr
 
 `docker volume create -d local -o type=none -o o=bind -o device=$(pwd) reactdev`
 
-On Windows do it like this:
+On **Windows!** do it like this:
 
-`docker volume create -d local -o type=none -o o=bind -o device=%CD:\=/% reactdev`
+`docker volume create -d local -o type=none -o o=bind -o device=/c/Users/ruairi/Dev/docker-various-examples/javascript/app reactdev`
+
+Of course replace my username with yours and update the path to wherever you put your code.
 
 Take a second to look at the volume you just created:
 
