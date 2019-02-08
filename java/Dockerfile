@@ -4,10 +4,11 @@ FROM alpine as generator
 WORKDIR /usr/gen/
 
 RUN apk update
-RUN apk add curl
+RUN apk add wget
 RUN apk add unzip
 
-RUN curl 'https://start.spring.io/starter.zip?type=maven-project&language=java&bootVersion=2.1.2.RELEASE&baseDir=demo&groupId=com.example&artifactId=demo&name=demo&description=Demo+project+for+Spring+Boot&packageName=com.example.demo&packaging=jar&javaVersion=1.8&autocomplete=&generate-project=&style=devtools&style=web' --compressed --output demo.zip
+RUN wget -O demo.zip 'https://start.spring.io/starter.zip?type=maven-project&language=java&bootVersion=2.1.2.RELEASE&baseDir=demo&groupId=com.example&artifactId=demo&name=demo&description=Demo+project+for+Spring+Boot&packageName=com.example.demo&packaging=jar&javaVersion=1.8&autocomplete=&generate-project=&style=devtools&style=web'
+
 RUN unzip demo.zip
 RUN rm demo.zip
 
