@@ -33,7 +33,7 @@ Create a named volume for the current directory (using mavendev here but feel fr
 
 `docker volume create -d local -o type=none -o o=bind -o device=$(pwd) mavendev`
 
-**Windows!** One annoying thing is $(pwd) on Windows returns a path with Widows backslashes. So you might see $(pwd) git something like `C:\Users\you\whatever` but it needs to be in the form `/c/Users/you/whatever`. I haven't found a good way to workaround this yet. One thing, if you're using regular Cmd.exe you can at least do this in the current directory: `echo %CD:\=/%` to print the path with forward slashes. You then need to replact `C:` with `/c`. 
+**Windows!** One annoying thing is $(pwd) on Windows returns a path with Widows backslashes. So you might see $(pwd) give something like `C:\Users\you\whatever` but it needs to be in the form `/c/Users/you/whatever`. I haven't found a good way to workaround this yet. One thing, if you're using regular Cmd.exe you can at least do this in the current directory: `echo %CD:\=/%` to print the path with forward slashes. You then need to replact `C:` with `/c`. 
 
 So if you're on Windows you need to update the volume command to something like:
 
@@ -103,13 +103,9 @@ You should now be able to access the running application at <http://localhost:80
 
 You will just see a Whitelabel Error Page since we haven't setup any routes yet but that still shows the app is running and accessible.
 
-Notice the java code from the docker image is now in java/app. You can edit this code and your changes will be reflected in the container. 
+Notice the java code from the docker image is now in java/app. You can edit this code and your changes will be reflected in the container.
 
-**Next steps**
-
-Check out [this post on using docker for local development](http://www.realgorithm.io/2018/04/simple-dev-environment-with-docker-compose/)
-
-[Play with docker](https://labs.play-with-docker.com/)
+To exit, type `exit` from within the running container. Because we used the `--rm` flag, the container will be removed after exiting.
 
 # Generate a React project, build and run it
 
@@ -204,9 +200,63 @@ Now you can run `yarn start`
 
 And access the app on <http://localhost:3000>
 
+To exit, type `exit` from within the running container. Because we used the `--rm` flag, the container will be removed after exiting. 
+
+# Fun with networks
+
+We will look at how to network docker containers together. 
+
+You can take a look at what docker networks currently exist on your machine with:
+
+```
+docker network ls
+```
+
+You can also inspect a network:
+
+```
+docker network inspect bridge
+```
+
+You can create a new network with:
+
+```
+docker network create my-network
+```
+
+I won't go much into networking beyond showing how to create one with docker but if you have requirements, like a particular network driver you want to use, you can set that while creating a network. For example:
+
+```
+docker network create --driver bridge my-network
+```
+
+This will set the driver to `bridge`. This happens to be the default driver so we left it out when creating our new network above but there are other drivers you can use if you need to. A good resource to learn more about network drivers for docker [is here](https://blog.docker.com/2016/12/understanding-docker-networking-drivers-use-cases/). 
+
+We can try running the images we made earlier and connect them to the network we just created:
+
+```
+docker run --rm -dit --name react-build1 --network my-network -v reactdev:/usr/app/my-app -w /usr/app/my-app -p 3000:3000 react-build ash
+```
+
+```
+docker run --rm -dit --name maven-build1 --network my-network -v mavendev:/usr/app -w /usr/app -p 8080:8080 maven-build ash
+```
+
+**Challenge**
+
+Attach a shell to one of the running containers. 
+
+Can you confirm the 2 containers are on the same network? 
+
+How do they address eachother?
+
+**Extra challenge**
+
+Add a database to the network and have the spring app connect to it.
+
 # Cleanup
 
-You probably don't want to leave all the stuff we just created hanging aroound on yoour achne if you're not usign it.
+You probably don't want to leave all the stuff we just created hanging around on your machine if you're not using it.
 
 Here's how to clean it all up.
 
@@ -254,3 +304,14 @@ Delete a volume `docker volume rm <volume-name>`
 
 Clean up all unused volumes: `docker volume prune`
 
+### Networks
+
+Remove the network we created with `docker network rm my-network`
+
+You can also prune all unused networks with `docker network prune`
+
+# Next steps
+
+Check out [this post on using docker for local development](http://www.realgorithm.io/2018/04/simple-dev-environment-with-docker-compose/)
+
+[Play with docker](https://labs.play-with-docker.com/)
