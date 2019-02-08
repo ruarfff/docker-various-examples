@@ -20,5 +20,7 @@ WORKDIR /usr/app
 
 COPY --from=generator /usr/gen/demo .
 
+COPY settings.xml /usr/share/maven/ref/
+
 RUN ./mvnw clean install
 
