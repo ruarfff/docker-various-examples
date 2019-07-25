@@ -2,7 +2,7 @@
 
 A repository with some interesting examples of cool docker things
 
-# Generate a Java project, build and run it
+## Generate a Java project, build and run it
 
 First go to the java directory in this project:
 
@@ -10,11 +10,9 @@ First go to the java directory in this project:
 
 Now build the docker image:
 
-`docker build . -t maven-build`
+`docker build . -t java-build`
 
-(not sure why I am using maven-build as a name but too lazy to go change it now)
-
-The Dockerfile uses dockers [multistage build](https://docs.docker.com/develop/develop-images/multistage-build/) feature to pull a generated project from [start.spring.io](https://start.spring.io/), unpacks it and then copies the code into anther container that has maven and java installed. The project will then build and be run.
+The Dockerfile uses dockers [multistage build](https://docs.docker.com/develop/develop-images/multistage-build/) feature to pull a generated project from [start.spring.io](https://start.spring.io/), unpacks it and then copies the code into another container that has java installed. The project will then build.
 
 Now you can run the container and mount a volume to edit the code on your machine.
 
@@ -24,42 +22,42 @@ From the java directory:
 
 `mkdir -p app && cd "$_"`
 
-On Windows: 
+On Windows:
 
 `mkdir app`
 `cd app`
 
-Create a named volume for the current directory (using mavendev here but feel free to call it something else):
+Create a named volume for the current directory (using javadev here but feel free to call it something else):
 
-`docker volume create -d local -o type=none -o o=bind -o device=$(pwd) mavendev`
+`docker volume create -d local -o type=none -o o=bind -o device=$(pwd) javadev`
 
-**Windows!** One annoying thing is $(pwd) on Windows returns a path with Widows backslashes. So you might see $(pwd) give something like `C:\Users\you\whatever` but it needs to be in the form `/c/Users/you/whatever`. I haven't found a good way to workaround this yet. One thing, if you're using regular Cmd.exe you can at least do this in the current directory: `echo %CD:\=/%` to print the path with forward slashes. You then need to replact `C:` with `/c`. 
+**Windows!** One annoying thing is $(pwd) on Windows returns a path with Widows backslashes. So you might see $(pwd) give something like `C:\Users\you\whatever` but it needs to be in the form `/c/Users/you/whatever`. I haven't found a good way to workaround this yet. One thing, if you're using regular Cmd.exe you can at least do this in the current directory: `echo %CD:\=/%` to print the path with forward slashes. You then need to replace `C:` with `/c`.
 
 So if you're on Windows you need to update the volume command to something like:
 
-`docker volume create -d local -o type=none -o o=bind -o device=/c/Users/ruairi/Dev/docker-various-examples/java/app mavendev`
+`docker volume create -d local -o type=none -o o=bind -o device=/c/Users/ruairi/Dev/docker-various-examples/java/app javadev`
 
 Of course replace my username with yours and update the path to wherever you put your code.
 
 Take a second to look at the volume you just created:
 
-```
+```bash
 $ docker volume ls
 DRIVER              VOLUME NAME
-local               mavendev
+local               javadev
 ```
 
 You can inspect it to make sure you are happy with the directory setup. Device is the directory we want to bind into our container soon. Basically we want to share a directory between our machine and the container. Make sure this directory is empty on your machine.
 
-```
-$ docker volume inspect mavendev
+```bash
+$ docker volume inspect javadev
 [
   {
     "CreatedAt": "2019-02-06T19:18:44Z",
     "Driver": "local",
     "Labels": {},
-    "Mountpoint": "/var/lib/docker/volumes/mavendev/_data",
-    "Name": "mavendev",
+    "Mountpoint": "/var/lib/docker/volumes/javadev/_data",
+    "Name": "javadev",
     "Options": {
       "device": "/Users/ruairi/Dev/docker-various-examples/java/app",
       "o": "bind",
@@ -72,14 +70,14 @@ $ docker volume inspect mavendev
 
 If you're on Windows it would look something like this:
 
-```
+```bash
 [
   {
     "CreatedAt": "2019-02-07T07:27:11Z",
     "Driver": "local",
     "Labels": {},
-    "Mountpoint": "/var/lib/docker/volumes/mavendev/_data",
-    "Name": "mavendev",
+    "Mountpoint": "/var/lib/docker/volumes/javadev/_data",
+    "Name": "javadev",
     "Options": {
         "device": "/c/Users/ruairi/Dev/docker-various-examples/java/app",
         "o": "bind",
@@ -92,12 +90,12 @@ If you're on Windows it would look something like this:
 
 Now we can run the container and use the volume we created:
 
-`docker run --rm -it -v mavendev:/usr/app -p 8080:8080 maven-build sh`
+`docker run --rm -it -v javadev:/usr/app -p 8080:8080 java-build sh`
 
 This opens a shell in the container.
 You can run the app with:
 
-`./mvnw spring-boot:run`
+`./gradlew bootRun`
 
 You should now be able to access the running application at <http://localhost:8080>
 
@@ -107,7 +105,7 @@ Notice the java code from the docker image is now in java/app. You can edit this
 
 To exit, type `exit` from within the running container. Because we used the `--rm` flag, the container will be removed after exiting.
 
-# Generate a React project, build and run it
+## Generate a React project, build and run it
 
 First go to the javascript directory in this repository:
 
@@ -145,7 +143,7 @@ Of course replace my username with yours and update the path to wherever you put
 
 Take a second to look at the volume you just created:
 
-```
+```bash
 $ docker volume ls
 DRIVER              VOLUME NAME
 local               reactdev
@@ -153,7 +151,7 @@ local               reactdev
 
 You can inspect it to make sure you are happy with the directory setup. Device is the directory we want to bind into our container soon. Basically we want to share a directory between our machine and the container. Make sure this directory is empty on your machine.
 
-```
+```bash
 $ docker volume inspect reactdev
 [
 {
@@ -161,7 +159,7 @@ $ docker volume inspect reactdev
 "Driver": "local",
 "Labels": {},
 "Mountpoint": "/var/lib/docker/volumes/reactdev/_data",
-"Name": "mavendev",
+"Name": "reactdev",
 "Options": {
 "device": "/Users/ruairi/Dev/docker-various-examples/react/app",
 "o": "bind",
@@ -174,14 +172,14 @@ $ docker volume inspect reactdev
 
 If you're on Windows it would look something like this:
 
-```
+```bash
 [
   {
     "CreatedAt": "2019-02-07T07:27:11Z",
     "Driver": "local",
     "Labels": {},
-    "Mountpoint": "/var/lib/docker/volumes/mavendev/_data",
-    "Name": "mavendev",
+    "Mountpoint": "/var/lib/docker/volumes/reactdev/_data",
+    "Name": "reactdev",
     "Options": {
         "device": "/c/Users/ruairi/Dev/docker-various-examples/javascript/app",
         "o": "bind",
@@ -200,61 +198,61 @@ Now you can run `yarn start`
 
 And access the app on <http://localhost:3000>
 
-To exit, type `exit` from within the running container. Because we used the `--rm` flag, the container will be removed after exiting. 
+To exit, type `exit` from within the running container. Because we used the `--rm` flag, the container will be removed after exiting.
 
-# Fun with networks
+## Fun with networks
 
-We will look at how to network docker containers together. 
+We will look at how to network docker containers together.
 
 You can take a look at what docker networks currently exist on your machine with:
 
-```
+```bash
 docker network ls
 ```
 
 You can also inspect a network:
 
-```
+```bash
 docker network inspect bridge
 ```
 
 You can create a new network with:
 
-```
+```bash
 docker network create my-network
 ```
 
 I won't go much into networking beyond showing how to create one with docker but if you have requirements, like a particular network driver you want to use, you can set that while creating a network. For example:
 
-```
+```bash
 docker network create --driver bridge my-network
 ```
 
-This will set the driver to `bridge`. This happens to be the default driver so we left it out when creating our new network above but there are other drivers you can use if you need to. A good resource to learn more about network drivers for docker [is here](https://blog.docker.com/2016/12/understanding-docker-networking-drivers-use-cases/). 
+This will set the driver to `bridge`. This happens to be the default driver so we left it out when creating our new network above but there are other drivers you can use if you need to. A good resource to learn more about network drivers for docker [is here](https://blog.docker.com/2016/12/understanding-docker-networking-drivers-use-cases/).
 
 We can try running the images we made earlier and connect them to the network we just created:
 
-```
-docker run --rm -dit --name react-build1 --network my-network -v reactdev:/usr/app/my-app -w /usr/app/my-app -p 3000:3000 react-build ash
-```
-
-```
-docker run --rm -dit --name maven-build1 --network my-network -v mavendev:/usr/app -w /usr/app -p 8080:8080 maven-build ash
+```bash
+docker run --rm -dit --name react-build1 --network my-network -v reactdev:/usr/app/my-app -w /usr/app/my-app -p 3000:3000 react-build sh
 ```
 
-**Challenge**
+```bash
+docker run --rm -dit --name java-build1 --network my-network -v javadev:/usr/app -w /usr/app -p 8080:8080 java-build sh
+```
 
-Attach a shell to one of the running containers. 
+### Challenge
 
-Can you confirm the 2 containers are on the same network? 
+Attach a shell to one of the running containers.
 
-How do they address eachother?
+Can you confirm the 2 containers are on the same network?
 
-**Extra challenge**
+How do they address each other?
+
+### Extra challenge
 
 Add a database to the network and have the spring app connect to it.
 
-# Cleanup
+## Cleanup
 
 You probably don't want to leave all the stuff we just created hanging around on your machine if you're not using it.
 
@@ -266,7 +264,7 @@ First stop and remove the containers we created.
 
 To see them we use [docker ps](https://docs.docker.com/engine/reference/commandline/ps/):
 
-```
+```bash
 docker ps -a -q
 ```
 
@@ -282,7 +280,7 @@ If the container is running, you would first haev to do:
 
 If you just want to get rid of all containers you can do this:
 
-```
+```bash
 docker stop $(docker ps -a -q)
 docker rm $(docker ps -a -q)
 ```
@@ -291,10 +289,9 @@ docker rm $(docker ps -a -q)
 
 You can see what images we created using [docker image ls](https://docs.docker.com/engine/reference/commandline/image_ls/) (`docker images` works too).
 
-The command to remove and image is: `docker rmi <image-id>` 
+The command to remove and image is: `docker rmi <image-id>`
 
 It's fine to leave the images there but if you'd like to free up some space you can delete them.
-
 
 ### Volumes
 
@@ -310,7 +307,7 @@ Remove the network we created with `docker network rm my-network`
 
 You can also prune all unused networks with `docker network prune`
 
-# Next steps
+## Next steps
 
 Check out [this post on using docker for local development](http://www.realgorithm.io/2018/04/simple-dev-environment-with-docker-compose/)
 
